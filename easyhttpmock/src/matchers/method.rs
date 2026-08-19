@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
-use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
-
 use crate::mock::Request;
+use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
+use std::sync::Arc;
 
 /// Trait for converting values into http::Method.
 pub trait AsMethod {

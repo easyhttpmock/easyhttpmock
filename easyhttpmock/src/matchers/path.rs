@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
-use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
-
 use crate::mock::Request;
+use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
+use std::sync::Arc;
 
 /// Creates a matcher that checks if the request path matches the given regex pattern.
 ///

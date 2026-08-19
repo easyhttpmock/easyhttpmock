@@ -7,19 +7,18 @@ use easyhttpmock::{
 };
 use http::Version;
 use http_body_util::BodyExt;
-use std::sync::Arc;
+use std::{net::IpAddr, sync::Arc};
 use vetis_smol::{
     handler_fn,
-    http::Response,
-    virtual_host::{path::HandlerPath, VirtualHostImpl},
-    ServerConfig, Vetis, VetisServer,
+    host::{path::HandlerPath, HostImpl},
+    Response, ServerConfig, Vetis, VetisServer,
 };
 
 /// Builder for VetisAdapterConfig
 pub struct VetisAdapterConfigBuilder {
     hostname: String,
-    interface: String,
-    protocol_version: Version,
+    interface: IpAddr,
+    protos: Vec<Version>,
     port: u16,
     cert: Option<Vec<u8>>,
     key: Option<Vec<u8>>,
@@ -46,8 +45,8 @@ impl VetisAdapterConfigBuilder {
     ///
     /// # Returns
     /// A new `VetisAdapterConfigBuilder` instance with the interface set.
-    pub fn interface(mut self, interface: &str) -> Self {
-        self.interface = interface.to_string();
+    pub fn interface(mut self, interface: IpAddr) -> Self {
+        self.interface = interface;
         self
     }
 
@@ -58,8 +57,8 @@ impl VetisAdapterConfigBuilder {
     ///
     /// # Returns
     /// A new `VetisAdapterConfigBuilder` instance with the protocol version set.
-    pub fn protocol_version(mut self, protocol_version: Version) -> Self {
-        self.protocol_version = protocol_version;
+    pub fn protos(mut self, protos: Vec<Version>) -> Self {
+        self.protos = protos;
         self
     }
 
@@ -119,7 +118,7 @@ impl VetisAdapterConfigBuilder {
         VetisAdapterConfig {
             hostname: self.hostname,
             interface: self.interface,
-            protocol_version: self.protocol_version,
+            protos: self.protos,
             port: self.port,
             cert: self.cert,
             key: self.key,
@@ -132,8 +131,8 @@ impl VetisAdapterConfigBuilder {
 #[derive(Clone, PartialEq)]
 pub struct VetisAdapterConfig {
     hostname: String,
-    interface: String,
-    protocol_version: Version,
+    interface: IpAddr,
+    protos: Vec<Version>,
     port: u16,
     cert: Option<Vec<u8>>,
     key: Option<Vec<u8>>,
@@ -154,8 +153,10 @@ impl Default for VetisAdapterConfig {
     fn default() -> Self {
         Self {
             hostname: "localhost".into(),
-            interface: "0.0.0.0".into(),
-            protocol_version: Version::HTTP_11,
+            interface: "0.0.0.0"
+                .parse()
+                .unwrap(),
+            protos: vec![Version::HTTP_11],
             port: generate_randon_port(),
             cert: None,
             key: None,
@@ -178,8 +179,10 @@ impl VetisAdapterConfig {
     pub fn builder() -> VetisAdapterConfigBuilder {
         VetisAdapterConfigBuilder {
             hostname: "localhost".into(),
-            interface: "0.0.0.0".into(),
-            protocol_version: Version::HTTP_11,
+            interface: "0.0.0.0"
+                .parse()
+                .unwrap(),
+            protos: vec![Version::HTTP_11],
             port: rand::random_range(9000..65535),
             cert: None,
             key: None,
@@ -199,7 +202,7 @@ impl VetisAdapterConfig {
     ///
     /// # Returns
     /// The interface of the server.
-    pub fn interface(&self) -> &str {
+    pub fn interface(&self) -> &IpAddr {
         &self.interface
     }
 
@@ -239,8 +242,8 @@ impl VetisAdapterConfig {
 impl From<VetisAdapterConfig> for ServerConfig {
     fn from(config: VetisAdapterConfig) -> Self {
         let listener_config = vetis_smol::ListenerConfig::builder()
-            .interface(&config.interface)
-            .protocol_version(config.protocol_version)
+            .interface(config.interface)
+            .protos(config.protos)
             .port(config.port)
             .build()
             .expect("Failed to build listener config");
@@ -405,10 +408,7 @@ impl ServerAdapter for VetisAdapter {
 
         let hostname = self.hostname();
 
-        let host_config = vetis_smol::VirtualHostConfig::builder()
-            .hostname(&hostname)
-            .root_directory(".")
-            .port(self.config.port());
+        let host_config = vetis_smol::HostConfig::builder().hostname(&hostname);
 
         let host_config = if let Some(((cert, key), ca)) = self
             .config
@@ -440,7 +440,7 @@ impl ServerAdapter for VetisAdapter {
             .build()
             .map_err(|e| EasyHttpMockError::Server(ServerError::Creation(e.to_string())))?;
 
-        let mut host = VirtualHostImpl::new(host_config);
+        let mut host = HostImpl::new(host_config);
         if let Err(e) = path {
             return Err(EasyHttpMockError::Server(ServerError::Creation(e.to_string())));
         }
@@ -448,7 +448,7 @@ impl ServerAdapter for VetisAdapter {
         host.add_path(path.unwrap());
 
         self.server
-            .add_virtual_host(host)
+            .add_host(host)
             .await;
 
         self.server

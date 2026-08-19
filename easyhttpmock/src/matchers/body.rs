@@ -1,10 +1,6 @@
-use std::sync::Arc;
-
-use caramelo::MatchType::ToHave;
-use caramelo::Matcher;
-use caramelo::TypedMatcher;
-
 use crate::mock::Request;
+use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
+use std::sync::Arc;
 
 pub use self::json::*;
 pub use self::xml::*;

@@ -34,7 +34,7 @@ async fn test_mock_request() -> Result<(), Box<dyn Error>> {
     let server_key = SERVER_KEY;
 
     let vetis_adapter_config = VetisAdapterConfig::builder()
-        .protocol_version(default_protocol())
+        .protos(vec![default_protocol()])
         .with_random_port()
         .cert(server_cert.to_vec())
         .key(server_key.to_vec())

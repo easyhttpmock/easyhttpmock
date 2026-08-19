@@ -1,9 +1,8 @@
-use std::sync::Arc;
-
 use caramelo::{
     MatchType::{self, To},
     Matcher, TypedMatcher,
 };
+use std::sync::Arc;
 
 /// Creates a matcher that matches values that satisfy all given matchers
 ///
