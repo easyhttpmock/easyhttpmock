@@ -1,7 +1,6 @@
+use crate::mock::Request;
 use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
 use http::HeaderName;
-
-use crate::mock::Request;
 
 /// Trait for converting values into HeaderName.
 pub trait AsHeaderName {

@@ -1,6 +1,6 @@
 [package]
 name = "easyhttpmock-vetis-smol"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 authors.workspace = true
 repository.workspace = true
@@ -16,6 +16,12 @@ rust-version.workspace = true
 all-features = true
 
 [features]
+default = [
+  "http1",
+  "http2",
+  #"http3"
+]
+
 xml = ["easyhttpmock/xml"]
 json = ["easyhttpmock/json"]
 http1 = ["vetis-smol/http1"]
@@ -25,23 +31,27 @@ http3 = ["vetis-smol/http3"]
 rust-tls = ["vetis-smol/rust-tls"]
 
 [dependencies]
-caramelo = { version = "0.1.2" }
+caramelo = { workspace = true }
 easyhttpmock = { workspace = true }
-http = "1.4.0"
-http-body-util = "0.1.3"
+http = { workspace = true }
+http-body-util = { workspace = true }
 macro_rules_attribute = "0.2.2"
-rand = { version = "0.10.0", default-features = false }
+rand = { workspace = true, default-features = false }
 smol = { version = "2.0.2", default-features = false }
 smol-macros = { version = "0.1.1", default-features = false }
-vetis-smol = { version = "0.1.0", features = [
+vetis-smol = { version = "0.1.1", features = [
+  "http1",
   "http2",
+  #"http3",
   "rust-tls",
 ], default-features = false }
 
 [dev-dependencies]
-deboa = { version = "0.1.0" }
+deboa = { workspace = true }
 deboa-smol = { version = "0.1.0", default-features = false, features = [
+  "http1",
   "http2",
+  #"http3",
   "rust-tls",
   "default-rustls-provider",
   "default-rustls-verifier",

@@ -1,10 +1,9 @@
-use caramelo::{expect, matchers::eq, MatcherExt};
-use http::{header::CONTENT_TYPE, Method, Uri, Version};
-
 use crate::{
     matchers::{header, header_value, method, path},
     mock::Request,
 };
+use caramelo::{expect, matchers::eq, MatcherExt};
+use http::{header::CONTENT_TYPE, Method, Uri, Version};
 
 #[test]
 fn test_path_matcher() {

@@ -1,6 +1,5 @@
-use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
-
 use crate::mock::Request;
+use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
 
 /// Creates a matcher that checks if the request query matches the given regex pattern.
 ///
