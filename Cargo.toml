@@ -4,7 +4,7 @@ resolver = "3"
 # Include both parts of the library in the workspace
 members = [
   "easyhttpmock",
-  #"easyhttpmock-vetis-compio",
+  "easyhttpmock-vetis-compio",
   "easyhttpmock-vetis-smol",
   "easyhttpmock-vetis-tokio",
   #"examples/simple"

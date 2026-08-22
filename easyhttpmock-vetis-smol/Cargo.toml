@@ -48,7 +48,7 @@ vetis-smol = { version = "0.1.1", features = [
 
 [dev-dependencies]
 deboa = { workspace = true }
-deboa-smol = { version = "0.1.0", default-features = false, features = [
+deboa-smol = { version = "0.1.3", default-features = false, features = [
   "http1",
   "http2",
   #"http3",
