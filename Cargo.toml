@@ -17,8 +17,6 @@ rust-version = "1.75.0"
 
 [workspace.dependencies]
 caramelo = { version = "0.1.2" }
-deboa = { version = ">= 0.1.0" }
-easyhttpmock = { version = ">= 0.1.3", path = "easyhttpmock" }
 http = "1.5.0"
 http-body-util = "0.1.5"
 rand = { version = "0.10.2", default-features = false }
