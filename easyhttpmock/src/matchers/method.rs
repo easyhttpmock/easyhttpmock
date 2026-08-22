@@ -26,6 +26,7 @@ impl AsMethod for &str {
         match self {
             "GET" | "get" => http::Method::GET,
             "POST" | "post" => http::Method::POST,
+            "QUERY" | "query" => http::Method::QUERY,
             "PUT" | "put" => http::Method::PUT,
             "DELETE" | "delete" => http::Method::DELETE,
             "PATCH" | "patch" => http::Method::PATCH,
