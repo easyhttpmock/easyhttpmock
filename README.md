@@ -1,6 +1,6 @@
 # EasyHttpMock
 
-[![Crates.io downloads](https://img.shields.io/crates/d/easyhttpmock)](https://crates.io/crates/easyhttpmock) [![crates.io](https://img.shields.io/crates/v/easyhttpmock?style=flat-square)](https://crates.io/crates/easyhttpmock) [![Build Status](https://github.com/ararog/easyhttpmock/actions/workflows/rust.yml/badge.svg?event=push)](https://github.com/ararog/easyhttpmock/actions/workflows/rust.yml) ![Crates.io MSRV](https://img.shields.io/crates/msrv/easyhttpmock) [![Documentation](https://docs.rs/easyhttpmock/badge.svg)](https://docs.rs/easyhttpmock/latest/easyhttpmock) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ararog/easyhttpmock/blob/main/LICENSE.md)  [![codecov](https://codecov.io/gh/ararog/easyhttpmock/graph/badge.svg?token=T0HSBAPVSI)](https://codecov.io/gh/ararog/easyhttpmock)
+[![Crates.io downloads](https://img.shields.io/crates/d/easyhttpmock)](https://crates.io/crates/easyhttpmock) [![crates.io](https://img.shields.io/crates/v/easyhttpmock?style=flat-square)](https://crates.io/crates/easyhttpmock) [![Build Status](https://github.com/easyhttpmock/easyhttpmock/actions/workflows/rust.yml/badge.svg?event=push)](https://github.com/easyhttpmock/easyhttpmock/actions/workflows/rust.yml) ![Crates.io MSRV](https://img.shields.io/crates/msrv/easyhttpmock) [![Documentation](https://docs.rs/easyhttpmock/badge.svg)](https://docs.rs/easyhttpmock/latest/easyhttpmock) [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/easyhttpmock/easyhttpmock/blob/main/LICENSE.md)  [![codecov](https://codecov.io/gh/easyhttpmock/easyhttpmock/graph/badge.svg?token=T0HSBAPVSI)](https://codecov.io/gh/easyhttpmock/easyhttpmock)
 
 **EasyHttpMock** is a powerful yet simple HTTP mock server designed specifically for testing HTTP clients. Built to work with any web server, it provides a clean, intuitive API for creating realistic mock endpoints that simulate real-world API behavior, making your testing workflow faster and more reliable.
 
@@ -83,15 +83,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ## Subprojects
 
-### [easyhttpmock](https://github.com/ararog/easyhttpmock)
+### [easyhttpmock](https://github.com/easyhttpmock/easyhttpmock)
 
 Base crate for easyhttpmock.
 
-### [easyhttpmock-vetis-smol](https://github.com/ararog/easyhttpmock-vetis-smol)
+### [easyhttpmock-vetis-smol](https://github.com/easyhttpmock/easyhttpmock-vetis-smol)
 
 Adapter for vetis using smol runtime.
 
-### [easyhttpmock-vetis-tokio](https://github.com/ararog/easyhttpmock-vetis-tokio)
+### [easyhttpmock-vetis-tokio](https://github.com/easyhttpmock/easyhttpmock-vetis-tokio)
 
 Adapter for vetis using tokio runtime.
 
