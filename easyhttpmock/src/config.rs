@@ -25,8 +25,8 @@ where
     ///
     /// * `Self` - The current instance
     ///
-    pub fn base_url(mut self, base_url: Option<String>) -> Self {
-        self.base_url = base_url;
+    pub fn base_url(mut self, base_url: String) -> Self {
+        self.base_url = Some(base_url);
         self
     }
 
