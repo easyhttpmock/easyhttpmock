@@ -177,3 +177,64 @@ fn test_header_value_regex_failure() {
 
     expect(request).to_have(header_value("content-type", r"^text/.*"));
 }
+
+#[cfg(feature = "json")]
+#[cfg(test)]
+mod json_test {
+    use crate::{matchers::partial_json_body, mock::Request};
+    use bytes::Bytes;
+    use caramelo::expect;
+    use http::Uri;
+    use serde_json::json;
+
+    #[test]
+    fn test_partial_json() {
+        let data = json!({ "code": 200, "message": "Something went wrong" });
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/json")
+            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .unwrap();
+        expect(request).to_have(partial_json_body(r#"$.code"#));
+    }
+
+    #[test]
+    #[should_panic = "Expected Request { method: GET, uri: /api/users, version: HTTP/1.1, headers: {\"content-type\": \"application/json\"}, query_params: None, body: Some(b\"{\\\"code\\\":200,\\\"message\\\":\\\"Something went wrong\\\"}\") } to have body contents containing $.name"]
+    fn test_partial_json_failure() {
+        let data = json!({ "code": 200, "message": "Something went wrong" });
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/json")
+            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .unwrap();
+        expect(request).to_have(partial_json_body(r#"$.name"#));
+    }
+}
+
+#[cfg(feature = "xml")]
+#[cfg(test)]
+mod xml_test {
+    use crate::{matchers::partial_xml_body, mock::Request};
+    use bytes::Bytes;
+    use caramelo::expect;
+    use http::Uri;
+
+    #[test]
+    fn test_partial_xml() {
+        let data = "<response><code>200</code><message>Something went wrong</message></response>";
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/xml")
+            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .unwrap();
+        expect(request).to_have(partial_xml_body(r#"//response/code"#));
+    }
+
+    #[test]
+    #[should_panic = "Expected Request { method: GET, uri: /api/users, version: HTTP/1.1, headers: {\"content-type\": \"application/xml\"}, query_params: None, body: Some(b\"<response><code>200</code><message>Something went wrong</message></response>\") } to have body contents containing //response/name"]
+    fn test_partial_xml_failure() {
+        let data = "<response><code>200</code><message>Something went wrong</message></response>";
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/xml")
+            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .unwrap();
+        expect(request).to_have(partial_xml_body(r#"//response/name"#));
+    }
+}

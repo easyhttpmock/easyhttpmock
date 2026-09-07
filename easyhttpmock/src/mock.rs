@@ -162,7 +162,6 @@ pub struct RequestBuilder {
     method: http::Method,
     version: http::Version,
     headers: http::HeaderMap,
-    body: Option<Bytes>,
 }
 
 impl RequestBuilder {
@@ -214,14 +213,14 @@ impl RequestBuilder {
     }
 
     /// Builds the request
-    pub fn body(self) -> Result<Request, http::Error> {
+    pub fn body(self, bytes: Bytes) -> Result<Request, http::Error> {
         Ok(Request {
             method: self.method,
             version: self.version,
             query_params: self.query_params,
             uri: self.uri,
             headers: self.headers,
-            body: self.body,
+            body: Some(bytes),
         })
     }
 }
@@ -269,7 +268,6 @@ impl Request {
             version: http::Version::HTTP_11,
             uri,
             headers: http::HeaderMap::new(),
-            body: None,
             query_params: None,
         }
     }

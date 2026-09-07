@@ -35,7 +35,7 @@ fn request_builder_creates_requests_and_exposes_all_fields() {
     expect(request.body()).to_be(eq(&None));
 
     let body_request = Request::get(Uri::from_static("/users"))
-        .body()
+        .empty()
         .unwrap();
     expect(body_request.body()).to_be(eq(&None));
 }
