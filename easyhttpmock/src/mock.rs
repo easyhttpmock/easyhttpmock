@@ -5,8 +5,9 @@ use crate::{
 };
 use bytes::Bytes;
 use caramelo::{MatchType, Matcher, TypedMatcher};
-use http::{request::Parts, HeaderMap, Method, StatusCode, Uri};
+use http::{HeaderMap, Method, StatusCode, Uri, request::Parts};
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
+
 /// State container for mock data
 pub struct MockState {
     inner: Arc<Mock>,
@@ -239,7 +240,7 @@ pub struct Request {
 impl Request {
     #[inline]
     /// Create a new request builder
-    pub fn from_parts(parts: Parts) -> Request {
+    pub fn from_parts(parts: Parts, body: Bytes) -> Request {
         let query_params = parts
             .uri
             .query()
@@ -258,11 +259,11 @@ impl Request {
             version: parts.version,
             headers: parts.headers,
             query_params,
-            body: None,
+            body: Some(body),
         }
     }
 
-    fn builder(method: http::Method, uri: Uri) -> RequestBuilder {
+    pub(crate) fn builder(method: http::Method, uri: Uri) -> RequestBuilder {
         RequestBuilder {
             method,
             version: http::Version::HTTP_11,
@@ -426,19 +427,19 @@ impl Respond {
 
     #[inline]
     /// Get the status code
-    pub fn status_code(&self) -> StatusCode {
-        self.status_code
+    pub fn status_code(&self) -> &StatusCode {
+        &self.status_code
     }
 
     #[inline]
     /// Get the headers
-    pub fn headers(&self) -> HashMap<String, String> {
-        self.headers.clone()
+    pub fn headers(&self) -> &HashMap<String, String> {
+        &self.headers
     }
 
     #[inline]
     /// Get the body
-    pub fn body(&self) -> Bytes {
-        self.body.clone()
+    pub fn body(&self) -> &Bytes {
+        &self.body
     }
 }

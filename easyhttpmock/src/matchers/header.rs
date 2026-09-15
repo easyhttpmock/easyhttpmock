@@ -1,6 +1,6 @@
 use crate::mock::Request;
 use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
-use http::HeaderName;
+use http::{header::AUTHORIZATION, HeaderName};
 
 /// Trait for converting values into HeaderName.
 pub trait AsHeaderName {
@@ -221,7 +221,7 @@ impl Matcher<Request> for Jwt {
     fn matches(&self, value: &Request) -> bool {
         value
             .headers()
-            .get("Authorization")
+            .get(AUTHORIZATION)
             .is_some_and(|v| {
                 v.to_str()
                     .unwrap_or("")
@@ -290,7 +290,7 @@ impl Matcher<Request> for BasicAuth {
     fn matches(&self, value: &Request) -> bool {
         value
             .headers()
-            .get("Authorization")
+            .get(AUTHORIZATION)
             .is_some_and(|v| {
                 v.to_str()
                     .unwrap_or("")

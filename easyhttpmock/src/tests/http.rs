@@ -1,8 +1,8 @@
 use crate::{
-    matchers::{header, header_value, method, path},
+    matchers::{header, header_value, method, path, And, Or},
     mock::Request,
 };
-use caramelo::{expect, matchers::eq, MatcherExt};
+use caramelo::{expect, matchers::eq, MatchType::ToHave, MatcherExt, TypedMatcher};
 use http::{header::CONTENT_TYPE, Method, Uri, Version};
 
 #[test]
@@ -12,6 +12,18 @@ fn test_path_matcher() {
         .unwrap();
 
     expect(request).to_have(path(r"^/api/.*$").and(method("GET")));
+}
+
+#[test]
+fn test_new_or_matcher() {
+    let or_matcher = Or::new(vec![method(Method::GET).into()]);
+    expect(or_matcher.matcher_type()).to_be(eq(ToHave));
+}
+
+#[test]
+fn test_new_and_matcher() {
+    let and_matcher = And::new(vec![method(Method::GET).into()]);
+    expect(and_matcher.matcher_type()).to_be(eq(ToHave));
 }
 
 #[test]
@@ -192,7 +204,10 @@ mod json_test {
         let data = json!({ "code": 200, "message": "Something went wrong" });
         let request = Request::get(Uri::from_static("/api/users"))
             .header("content-type", "application/json")
-            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
             .unwrap();
         expect(request).to_have(partial_json_body(r#"$.code"#));
     }
@@ -203,7 +218,10 @@ mod json_test {
         let data = json!({ "code": 200, "message": "Something went wrong" });
         let request = Request::get(Uri::from_static("/api/users"))
             .header("content-type", "application/json")
-            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
             .unwrap();
         expect(request).to_have(partial_json_body(r#"$.name"#));
     }
@@ -222,7 +240,10 @@ mod xml_test {
         let data = "<response><code>200</code><message>Something went wrong</message></response>";
         let request = Request::get(Uri::from_static("/api/users"))
             .header("content-type", "application/xml")
-            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
             .unwrap();
         expect(request).to_have(partial_xml_body(r#"//response/code"#));
     }
@@ -233,7 +254,10 @@ mod xml_test {
         let data = "<response><code>200</code><message>Something went wrong</message></response>";
         let request = Request::get(Uri::from_static("/api/users"))
             .header("content-type", "application/xml")
-            .body(Bytes::copy_from_slice(data.to_string().as_bytes()))
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
             .unwrap();
         expect(request).to_have(partial_xml_body(r#"//response/name"#));
     }
