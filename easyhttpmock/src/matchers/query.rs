@@ -1,6 +1,6 @@
 use crate::mock::Request;
 use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
-use http::Uri;
+use std::sync::Arc;
 
 /// Creates a matcher that checks if the request query matches the given regex pattern.
 ///
@@ -23,10 +23,13 @@ use http::Uri;
 ///
 /// let matcher = query_param(r"^/api/v1/.*$");
 /// ```
-pub fn query_param(value: &str) -> QueryParam {
+pub fn query_param<T>(value: &str) -> Arc<dyn TypedMatcher<T> + Send + Sync + 'static>
+where
+    QueryParam: TypedMatcher<T>,
+{
     let regex = regex::Regex::new(value);
     match regex {
-        Ok(regex) => QueryParam(regex),
+        Ok(regex) => Arc::new(QueryParam(regex)),
         Err(_) => panic!("Invalid regex pattern"),
     }
 }
@@ -73,35 +76,6 @@ impl TypedMatcher<Request> for QueryParam {
     }
 }
 
-impl Matcher<Uri> for QueryParam {
-    fn matches(&self, value: &Uri) -> bool {
-        if let Some(query_params) = &value.query() {
-            query_params
-                .split('&')
-                .into_iter()
-                .any(|key| {
-                    if let Some((key, _)) = key.rsplit_once('=') {
-                        self.0.is_match(key)
-                    } else {
-                        false
-                    }
-                })
-        } else {
-            false
-        }
-    }
-
-    fn description(&self) -> String {
-        format!("query param matching {:?}", self.0)
-    }
-}
-
-impl TypedMatcher<Uri> for QueryParam {
-    fn matcher_type(&self) -> caramelo::MatchType {
-        ToHave
-    }
-}
-
 /// Creates a matcher that checks if the request query matches the given regex pattern.
 ///
 /// # Arguments
@@ -123,10 +97,13 @@ impl TypedMatcher<Uri> for QueryParam {
 ///
 /// let matcher = query_value(r"^/api/v1/.*$");
 /// ```
-pub fn query_value(value: &str) -> QueryValue {
+pub fn query_value<T>(value: &str) -> Arc<dyn TypedMatcher<T> + Send + Sync + 'static>
+where
+    QueryValue: TypedMatcher<T>,
+{
     let regex = regex::Regex::new(value);
     match regex {
-        Ok(regex) => QueryValue(regex),
+        Ok(regex) => Arc::new(QueryValue(regex)),
         Err(_) => panic!("Invalid regex pattern"),
     }
 }

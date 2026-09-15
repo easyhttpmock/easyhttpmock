@@ -1,9 +1,16 @@
 use crate::{
-    matchers::{header, header_value, method, path, And, Or},
-    mock::Request,
+    matchers::{
+        basic_auth, body, header, header_value, jwt, method, path, query_param, query_value, And,
+        AsMethod, Or,
+    },
+    mock::{AsyncMatcherExt, Request},
 };
-use caramelo::{expect, matchers::eq, MatchType::ToHave, MatcherExt, TypedMatcher};
-use http::{header::CONTENT_TYPE, Method, Uri, Version};
+use bytes::Bytes;
+use caramelo::{expect, matchers::eq, MatchType::ToHave, TypedMatcher};
+use http::{
+    header::{AUTHORIZATION, CONTENT_TYPE},
+    Method, Uri, Version,
+};
 
 #[test]
 fn test_path_matcher() {
@@ -12,6 +19,49 @@ fn test_path_matcher() {
         .unwrap();
 
     expect(request).to_have(path(r"^/api/.*$").and(method("GET")));
+}
+
+#[test]
+fn test_query_matcher() {
+    let request = Request::get(Uri::from_static("/api/users?name=mark&age=31"))
+        .empty()
+        .unwrap();
+
+    expect(request).to_have(
+        path(r"^/api/.*$")
+            .and(method("GET"))
+            .and(query_param(r"^name$"))
+            .and(query_value(r"^mark$")),
+    );
+}
+
+#[test]
+fn test_as_method_str() {
+    let methods = ["POST", "DELETE", "PUT", "OPTIONS", "QUERY", "HEAD", "PATCH"];
+    for method_name in methods {
+        let uri = Uri::from_static("/api/users");
+        let request = Request::builder(method_name.into_method(), uri)
+            .empty()
+            .unwrap();
+        expect(request).to_have(method(method_name));
+    }
+}
+
+#[test]
+fn test_as_method_string() {
+    let methods = ["POST".to_owned()];
+    for method_name in methods {
+        let uri = Uri::from_static("/api/users");
+        let request = Request::builder(
+            method_name
+                .clone()
+                .into_method(),
+            uri,
+        )
+        .empty()
+        .unwrap();
+        expect(request).to_have(method(method_name));
+    }
 }
 
 #[test]
@@ -139,6 +189,26 @@ fn test_header_matcher() {
 }
 
 #[test]
+fn test_header_jwt_matcher() {
+    let request = Request::get(Uri::from_static("/api/users"))
+        .header(AUTHORIZATION, "Bearer 123456")
+        .empty()
+        .unwrap();
+
+    expect(request).to_have(jwt("123456"));
+}
+
+#[test]
+fn test_header_basic_auth_matcher() {
+    let request = Request::get(Uri::from_static("/api/users"))
+        .header(AUTHORIZATION, "Basic bWFyazpqb2huc29u")
+        .empty()
+        .unwrap();
+
+    expect(request).to_have(basic_auth("mark", "johnson"));
+}
+
+#[test]
 fn test_version_matcher() {
     let request = Request::get(Uri::from_static("/api/users"))
         .version(Version::HTTP_11)
@@ -190,14 +260,45 @@ fn test_header_value_regex_failure() {
     expect(request).to_have(header_value("content-type", r"^text/.*"));
 }
 
+#[test]
+fn test_body() {
+    let request = Request::get(Uri::from_static("/api/users"))
+        .header("content-type", "application/json")
+        .body(Bytes::from_static(b"Hello world!"))
+        .unwrap();
+
+    expect(request).to_have(body(r".*wor.*d!"));
+}
+
+#[test]
+#[should_panic = "Expected Request { method: GET, uri: /api/users, version: HTTP/1.1, headers: {\"content-type\": \"application/json\"}, query_params: None, body: Some(b\"Hello world!\") } to have body contents matching Regex(\".*war.*d!\")"]
+fn test_body_failure() {
+    let request = Request::get(Uri::from_static("/api/users"))
+        .header("content-type", "application/json")
+        .body(Bytes::from_static(b"Hello world!"))
+        .unwrap();
+
+    expect(request).to_have(body(r".*war.*d!"));
+}
+
 #[cfg(feature = "json")]
 #[cfg(test)]
 mod json_test {
-    use crate::{matchers::partial_json_body, mock::Request};
+    use crate::{
+        matchers::{exact_json_body, partial_json_body},
+        mock::Request,
+    };
     use bytes::Bytes;
     use caramelo::expect;
     use http::Uri;
+    use serde::{Deserialize, Serialize};
     use serde_json::json;
+
+    #[derive(Serialize, Deserialize)]
+    struct Payload {
+        code: u32,
+        message: String,
+    }
 
     #[test]
     fn test_partial_json() {
@@ -225,15 +326,54 @@ mod json_test {
             .unwrap();
         expect(request).to_have(partial_json_body(r#"$.name"#));
     }
+
+    #[test]
+    fn test_exact_json() {
+        let data = json!({ "code": 200, "message": "Something went wrong" });
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/json")
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
+            .unwrap();
+        let payload = Payload { code: 200, message: "Something went wrong".into() };
+        expect(request).to_have(exact_json_body(&payload));
+    }
+
+    #[test]
+    #[should_panic = "xpected Request { method: GET, uri: /api/users, version: HTTP/1.1, headers: {\"content-type\": \"application/json\"}, query_params: None, body: Some(b\"{\\\"code\\\":200,\\\"message\\\":\\\"Something went wrong\\\"}\") } to have body contents matching {\"code\":500,\"message\":\"Something went wrong\"}"]
+    fn test_exact_json_failure() {
+        let data = json!({ "code": 200, "message": "Something went wrong" });
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/json")
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
+            .unwrap();
+        let payload = Payload { code: 500, message: "Something went wrong".into() };
+        expect(request).to_have(exact_json_body(&payload));
+    }
 }
 
 #[cfg(feature = "xml")]
 #[cfg(test)]
 mod xml_test {
-    use crate::{matchers::partial_xml_body, mock::Request};
+    use crate::{
+        matchers::{exact_xml_body, partial_xml_body},
+        mock::Request,
+    };
     use bytes::Bytes;
     use caramelo::expect;
     use http::Uri;
+    use serde::{Deserialize, Serialize};
+
+    #[derive(Serialize, Deserialize)]
+    struct Person {
+        id: u32,
+        name: String,
+    }
 
     #[test]
     fn test_partial_xml() {
@@ -260,5 +400,34 @@ mod xml_test {
             ))
             .unwrap();
         expect(request).to_have(partial_xml_body(r#"//response/name"#));
+    }
+
+    #[test]
+    fn test_exact_xml() {
+        let data = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Person><id>12</id><name>take easy</name></Person>";
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/xml")
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
+            .unwrap();
+        let person = Person { id: 12, name: "take easy".into() };
+        expect(request).to_have(exact_xml_body(&person));
+    }
+
+    #[test]
+    #[should_panic = "Expected Request { method: GET, uri: /api/users, version: HTTP/1.1, headers: {\"content-type\": \"application/xml\"}, query_params: None, body: Some(b\"<Person><id>12</id><name>take easy</name></response>\") } to have body contents matching <?xml version=\"1.0\" encoding=\"UTF-8\"?><Person><id>32</id><name>take easy</name></Person>"]
+    fn test_exact_xml_failure() {
+        let data = "<Person><id>12</id><name>take easy</name></response>";
+        let request = Request::get(Uri::from_static("/api/users"))
+            .header("content-type", "application/xml")
+            .body(Bytes::copy_from_slice(
+                data.to_string()
+                    .as_bytes(),
+            ))
+            .unwrap();
+        let person = Person { id: 32, name: "take easy".into() };
+        expect(request).to_have(exact_xml_body(&person));
     }
 }

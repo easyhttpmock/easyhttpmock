@@ -92,6 +92,8 @@ impl RequestMock {
     }
 }
 
+// Our implemention of matchers is all related with Request type, we don't have
+// matchers expecting other input types.
 impl Matcher<Request> for Arc<dyn TypedMatcher<Request> + Send + Sync + 'static> {
     fn matches(&self, request: &Request) -> bool {
         self.as_ref()
@@ -104,6 +106,7 @@ impl Matcher<Request> for Arc<dyn TypedMatcher<Request> + Send + Sync + 'static>
     }
 }
 
+// TypedMatcher implementation for Matcher implementation above
 impl TypedMatcher<Request> for Arc<dyn TypedMatcher<Request> + Send + Sync + 'static> {
     fn matcher_type(&self) -> MatchType {
         self.as_ref()
@@ -118,8 +121,8 @@ where
     /// Combines this matcher with another using AND logic
     fn and<M>(self, matcher: M) -> Arc<dyn TypedMatcher<T> + Send + Sync + 'static>
     where
-        Self: Send + Sync,
         M: TypedMatcher<T> + Send + Sync + 'static,
+        Self: Send + Sync,
     {
         and(vec![Arc::new(self), Arc::new(matcher)])
     }
@@ -127,8 +130,8 @@ where
     /// Combines this matcher with another using OR logic
     fn or<M>(self, matcher: M) -> Arc<dyn TypedMatcher<T> + Send + Sync + 'static>
     where
-        Self: Send + Sync,
         M: TypedMatcher<T> + Send + Sync + 'static,
+        Self: Send + Sync,
     {
         or(vec![Arc::new(self), Arc::new(matcher)])
     }
@@ -264,12 +267,26 @@ impl Request {
     }
 
     pub(crate) fn builder(method: http::Method, uri: Uri) -> RequestBuilder {
+        let query_params = if let Some(query_params) = uri.query() {
+            Some(
+                query_params
+                    .split('&')
+                    .filter_map(|pair| {
+                        pair.split_once('=')
+                            .map(|(k, v)| (k.to_string(), v.to_string()))
+                    })
+                    .collect(),
+            )
+        } else {
+            None
+        };
+
         RequestBuilder {
             method,
             version: http::Version::HTTP_11,
             uri,
             headers: http::HeaderMap::new(),
-            query_params: None,
+            query_params,
         }
     }
 

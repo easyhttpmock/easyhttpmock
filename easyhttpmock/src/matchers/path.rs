@@ -23,7 +23,10 @@ use std::sync::Arc;
 ///
 /// let matcher = path(r"^/api/v1/.*$");
 /// ```
-pub fn path(value: &str) -> Arc<dyn TypedMatcher<Request> + Send + Sync + 'static> {
+pub fn path<T>(value: &str) -> Arc<dyn TypedMatcher<T> + Send + Sync + 'static>
+where
+    Path: TypedMatcher<T>,
+{
     let regex = regex::Regex::new(value);
     match regex {
         Ok(regex) => Arc::new(Path(regex)),

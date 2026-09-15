@@ -1,6 +1,6 @@
 use std::error::Error;
 
-mod http;
+mod matchers;
 mod mock;
 mod server;
 
