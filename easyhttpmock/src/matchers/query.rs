@@ -1,5 +1,6 @@
 use crate::mock::Request;
 use caramelo::{MatchType::ToHave, Matcher, TypedMatcher};
+use http::Uri;
 
 /// Creates a matcher that checks if the request query matches the given regex pattern.
 ///
@@ -67,6 +68,35 @@ impl Matcher<Request> for QueryParam {
 }
 
 impl TypedMatcher<Request> for QueryParam {
+    fn matcher_type(&self) -> caramelo::MatchType {
+        ToHave
+    }
+}
+
+impl Matcher<Uri> for QueryParam {
+    fn matches(&self, value: &Uri) -> bool {
+        if let Some(query_params) = &value.query() {
+            query_params
+                .split('&')
+                .into_iter()
+                .any(|key| {
+                    if let Some((key, _)) = key.rsplit_once('=') {
+                        self.0.is_match(key)
+                    } else {
+                        false
+                    }
+                })
+        } else {
+            false
+        }
+    }
+
+    fn description(&self) -> String {
+        format!("query param matching {:?}", self.0)
+    }
+}
+
+impl TypedMatcher<Uri> for QueryParam {
     fn matcher_type(&self) -> caramelo::MatchType {
         ToHave
     }

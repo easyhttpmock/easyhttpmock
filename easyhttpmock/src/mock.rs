@@ -5,7 +5,7 @@ use crate::{
 };
 use bytes::Bytes;
 use caramelo::{MatchType, Matcher, TypedMatcher};
-use http::{HeaderMap, Method, StatusCode, Uri, request::Parts};
+use http::{request::Parts, HeaderMap, Method, StatusCode, Uri};
 use std::{collections::HashMap, fmt::Debug, sync::Arc};
 
 /// State container for mock data
