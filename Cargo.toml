@@ -1,7 +1,5 @@
 [workspace]
-# Use the latest resolver available
 resolver = "3"
-# Include both parts of the library in the workspace
 members = [
   "easyhttpmock",
 ]
@@ -17,7 +15,6 @@ rust-version = "1.75.0"
 
 [workspace.dependencies]
 caramelo = { version = "0.1.5" }
-#caramelo = { path = "../caramelo/caramelo" }
 http = "1.5.0"
 http-body-util = "0.1.5"
 rand = { version = "0.10.3", default-features = false }
