@@ -24,17 +24,14 @@ xml = ["dep:simdxml", "dep:serde", "dep:serde-xml-rs"]
 
 [dependencies]
 bytes = { version = "1.12.1", default-features = false }
-caramelo = { workspace = true, default-features = false }
+caramelo = { workspace = true }
 http = { workspace = true }
 jsonpath-rust = { version = "1.0.4", optional = true }
-once_cell = "1.21.4"
-rand = { workspace = true, default-features = false, features = ["thread_rng"]}
 regex = { version = "1.12.4", default-features = false }
 serde = { version = "1.0.219", optional = true }
 serde-xml-rs = { version = "0.8.2", optional = true }
 serde_json = { version = "1.0.150", optional = true }
 simdxml = { version = "0.2.1", optional = true }
-sonic-number = "0.1.3"
 sonic-rs = { version = "0.5.10", optional = true }
 thiserror = "2.0.17"
 
