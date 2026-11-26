@@ -1,0 +1,14 @@
+name: Check unused deps
+
+permissions:
+  contents: read
+
+on:
+    schedule:
+        - cron: "10 0 * * *"
+jobs:
+    audit:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: bnjbvr/cargo-machete@main
